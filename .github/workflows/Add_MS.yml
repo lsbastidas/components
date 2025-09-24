@@ -238,6 +238,73 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: ${{ github.ref }}
+
+    - name: Get commit hash
+      id: get_commit
+      run: |
+        COMMIT_HASH=$(git rev-parse HEAD)
+        echo "commit_hash=$COMMIT_HASH" >> $GITHUB_OUTPUT
+        echo "📝 Commit hash to cherry-pick: $COMMIT_HASH"
+    
+    - name: Cherry-pick to develop branch
+      id: cherry_pick
+      run: |
+        echo "🍒 Iniciando cherry-pick a la rama develop..."
+        
+        # Verificar si la rama develop existe
+        if ! git ls-remote --heads origin develop | grep -q develop; then
+          echo "⚠️  La rama 'develop' no existe en el repositorio remoto"
+          echo "Saltando cherry-pick..."
+          exit 0
+        fi
+        
+        # Fetch todas las ramas remotas
+        git fetch origin
+        
+        # Checkout a develop
+        git checkout develop
+        git pull origin develop
+        
+        echo "✅ Cambiado a rama develop"
+        echo "📋 Últimos commits en develop:"
+        git log --oneline -3
+        
+        # Intentar hacer cherry-pick
+        if git cherry-pick ${{ steps.get_commit.outputs.commit_hash }}; then
+          echo "✅ Cherry-pick exitoso!"
+          echo "🎯 Commit aplicado en develop: ${{ steps.get_commit.outputs.commit_hash }}"
+          
+          # Push a develop
+          git push origin develop
+          echo "✅ Cambios pusheados a develop exitosamente"
+          
+          echo "cherry_pick_success=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Cherry-pick falló - posiblemente hay conflictos"
+          echo "🔧 Resolviendo conflictos automáticamente..."
+          
+          # Intentar resolver conflictos manteniendo el cambio del commit actual
+          git status --porcelain | grep "^UU" | cut -c4- | while read file; do
+            echo "🔧 Resolviendo conflicto en: $file"
+            # Aceptar la versión del commit que estamos cherry-picking
+            git checkout --theirs "$file"
+            git add "$file"
+          done
+          
+          # Continuar el cherry-pick si se resolvieron conflictos
+          if git cherry-pick --continue; then
+            echo "✅ Cherry-pick completado después de resolver conflictos"
+            git push origin develop
+            echo "✅ Cambios pusheados a develop exitosamente"
+            echo "cherry_pick_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ No se pudo completar el cherry-pick automáticamente"
+            echo "⚠️  Se requiere intervención manual"
+            git cherry-pick --abort
+            echo "cherry_pick_success=false" >> $GITHUB_OUTPUT
+          fi
+        fi
+      continue-on-error: true
     
     - name: Cleanup backup
       run: |
