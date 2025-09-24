@@ -88,7 +88,7 @@ jobs:
             
             cluster_file = sys.argv[1]
             namespace = sys.argv[2]
-            microservice = sys.argv[3]
+            new_microservice = sys.argv[3]
             
             try:
                 # Leer el archivo JSON
@@ -97,11 +97,39 @@ jobs:
                 
                 # Verificar si el namespace ya existe
                 if namespace in json_data:
-                    print(f"⚠️  Warning: El namespace '{namespace}' ya existe con el valor '{json_data[namespace]}'")
-                    print(f"Actualizando el microservicio de '{json_data[namespace]}' a '{microservice}'")
-                
-                # Agregar/actualizar el namespace y microservicio
-                json_data[namespace] = microservice
+                    existing_microservices = json_data[namespace]
+                    print(f"⚠️  Namespace '{namespace}' ya existe con microservicios: '{existing_microservices}'")
+                    
+                    # Separar los microservicios existentes
+                    if existing_microservices:
+                        microservices_list = [ms.strip() for ms in existing_microservices.split(',')]
+                    else:
+                        microservices_list = []
+                    
+                    # Verificar si el microservicio ya existe
+                    if new_microservice in microservices_list:
+                        print(f"ℹ️  El microservicio '{new_microservice}' ya existe en el namespace '{namespace}'")
+                        print("No se realizarán cambios.")
+                        return
+                    
+                    # Agregar el nuevo microservicio a la lista
+                    microservices_list.append(new_microservice)
+                    
+                    # Ordenar los microservicios alfabéticamente
+                    microservices_list.sort(key=str.lower)
+                    
+                    # Crear la cadena de microservicios separada por comas
+                    updated_microservices = ', '.join(microservices_list)
+                    
+                    print(f"➕ Agregando '{new_microservice}' a la lista existente")
+                    print(f"📝 Lista actualizada: '{updated_microservices}'")
+                    
+                    # Actualizar el namespace con la lista completa
+                    json_data[namespace] = updated_microservices
+                else:
+                    # Si el namespace no existe, simplemente agregarlo
+                    print(f"🆕 Creando nuevo namespace '{namespace}' con microservicio '{new_microservice}'")
+                    json_data[namespace] = new_microservice
                 
                 # Ordenar alfabéticamente por namespace (clave)
                 sorted_json = OrderedDict(sorted(json_data.items(), key=lambda x: x[0].lower()))
@@ -111,9 +139,9 @@ jobs:
                     json.dump(sorted_json, f, indent=2, ensure_ascii=False)
                     f.write('\n')  # Agregar nueva línea al final
                 
-                print(f"✅ Namespace '{namespace}' agregado/actualizado con microservicio '{microservice}'")
+                print(f"✅ Namespace '{namespace}' procesado exitosamente")
                 print(f"📁 Archivo actualizado: {cluster_file}")
-                print(f"🔤 Datos ordenados alfabéticamente por namespace")
+                print(f"🔤 Datos ordenados alfabéticamente (namespaces y microservicios)")
                 
                 # Mostrar el contenido actualizado (solo los primeros y últimos elementos para no saturar)
                 sorted_items = list(sorted_json.items())
@@ -134,9 +162,10 @@ jobs:
                     for ns, ms in sorted_items[-5:]:
                         print(f'    "{ns}": "{ms}"')
                 
-                # Destacar el namespace recién agregado/actualizado
+                # Destacar el namespace recién procesado
                 position = list(sorted_json.keys()).index(namespace) + 1
                 print(f'\n🎯 Namespace "{namespace}" está en la posición {position} de {total_items}')
+                print(f'🔧 Microservicios en "{namespace}": {sorted_json[namespace]}')
                 
             except FileNotFoundError:
                 print(f"❌ Error: No se pudo encontrar el archivo {cluster_file}")
@@ -191,12 +220,13 @@ jobs:
         if git diff --staged --quiet; then
           echo "ℹ️  No hay cambios para commitear"
         else
-          git commit -m "feat: Add namespace '${{ inputs.namespace }}' with microservice '${{ inputs.microservice }}' to ${{ inputs.cluster_name }}
+          git commit -m "feat: Add microservice '${{ inputs.microservice }}' to namespace '${{ inputs.namespace }}' in ${{ inputs.cluster_name }}
 
           📁 Cluster: ${{ inputs.cluster_name }}
           🏷️  Namespace: ${{ inputs.namespace }}
           🔧 Microservice: ${{ inputs.microservice }}
-          🔤 Sorted alphabetically by namespace
+          🔤 Sorted alphabetically (namespaces and microservices)
+          ➕ Preserves existing microservices in namespace
           
           Auto-generated by GitHub Actions"
           
