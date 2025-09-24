@@ -1,0 +1,167 @@
+name: Add Namespace and Microservice to Cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_name:
+        description: 'Nombre del cluster (ej: PDCOLClusterEA01)'
+        required: true
+        type: string
+      namespace:
+        description: 'Nombre del namespace (ej: siigo-addons)'
+        required: true
+        type: string
+      microservice:
+        description: 'Nombre del microservicio (ej: api-gateway-addons)'
+        required: true
+        type: string
+
+jobs:
+  add-namespace-microservice:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Validate cluster file exists
+      id: validate_cluster
+      run: |
+        CLUSTER_FILE="Utils/ms-per-cluster/${{ inputs.cluster_name }}.json"
+        if [ ! -f "$CLUSTER_FILE" ]; then
+          echo "❌ Error: El archivo $CLUSTER_FILE no existe"
+          echo "Archivos disponibles:"
+          ls -la Utils/ms-per-cluster/*.json || echo "No se encontraron archivos JSON"
+          exit 1
+        fi
+        echo "✅ Cluster file found: $CLUSTER_FILE"
+        echo "cluster_file=$CLUSTER_FILE" >> $GITHUB_OUTPUT
+    
+    - name: Backup original file
+      run: |
+        cp "${{ steps.validate_cluster.outputs.cluster_file }}" "${{ steps.validate_cluster.outputs.cluster_file }}.backup"
+    
+    - name: Add namespace and microservice
+      id: update_json
+      run: |
+        CLUSTER_FILE="${{ steps.validate_cluster.outputs.cluster_file }}"
+        NAMESPACE="${{ inputs.namespace }}"
+        MICROSERVICE="${{ inputs.microservice }}"
+        
+        # Crear script de Node.js para manipular el JSON
+        cat > update_json.js << 'EOF'
+        const fs = require('fs');
+        const path = require('path');
+        
+        const clusterFile = process.argv[2];
+        const namespace = process.argv[3];
+        const microservice = process.argv[4];
+        
+        try {
+          // Leer el archivo JSON
+          const jsonData = JSON.parse(fs.readFileSync(clusterFile, 'utf8'));
+          
+          // Verificar si el namespace ya existe
+          if (jsonData[namespace]) {
+            console.log(`⚠️  Warning: El namespace '${namespace}' ya existe con el valor '${jsonData[namespace]}'`);
+            console.log(`Actualizando el microservicio de '${jsonData[namespace]}' a '${microservice}'`);
+          }
+          
+          // Agregar/actualizar el namespace y microservicio
+          jsonData[namespace] = microservice;
+          
+          // Escribir el archivo JSON actualizado (con formato bonito)
+          fs.writeFileSync(clusterFile, JSON.stringify(jsonData, null, 2) + '\n');
+          
+          console.log(`✅ Namespace '${namespace}' agregado/actualizado con microservicio '${microservice}'`);
+          console.log(`📁 Archivo actualizado: ${clusterFile}`);
+          
+          // Mostrar el contenido actualizado
+          console.log('\n📋 Contenido actualizado:');
+          console.log(JSON.stringify(jsonData, null, 2));
+          
+        } catch (error) {
+          console.error('❌ Error al procesar el archivo JSON:', error.message);
+          process.exit(1);
+        }
+        EOF
+        
+        # Ejecutar el script
+        node update_json.js "$CLUSTER_FILE" "$NAMESPACE" "$MICROSERVICE"
+        
+        # Limpiar archivo temporal
+        rm update_json.js
+    
+    - name: Validate JSON syntax
+      run: |
+        echo "🔍 Validando sintaxis del JSON..."
+        if ! jq empty "${{ steps.validate_cluster.outputs.cluster_file }}"; then
+          echo "❌ Error: El archivo JSON tiene sintaxis inválida"
+          echo "Restaurando backup..."
+          cp "${{ steps.validate_cluster.outputs.cluster_file }}.backup" "${{ steps.validate_cluster.outputs.cluster_file }}"
+          exit 1
+        fi
+        echo "✅ Sintaxis JSON válida"
+    
+    - name: Show changes
+      run: |
+        echo "📊 Cambios realizados:"
+        echo "Archivo: ${{ steps.validate_cluster.outputs.cluster_file }}"
+        echo "Namespace agregado: ${{ inputs.namespace }}"
+        echo "Microservicio: ${{ inputs.microservice }}"
+        echo ""
+        echo "🔄 Diferencias:"
+        diff -u "${{ steps.validate_cluster.outputs.cluster_file }}.backup" "${{ steps.validate_cluster.outputs.cluster_file }}" || true
+    
+    - name: Commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Agregar solo el archivo modificado
+        git add "${{ steps.validate_cluster.outputs.cluster_file }}"
+        
+        # Verificar si hay cambios para commitear
+        if git diff --staged --quiet; then
+          echo "ℹ️  No hay cambios para commitear"
+        else
+          git commit -m "feat: Add namespace '${{ inputs.namespace }}' with microservice '${{ inputs.microservice }}' to ${{ inputs.cluster_name }}
+
+          📁 Cluster: ${{ inputs.cluster_name }}
+          🏷️  Namespace: ${{ inputs.namespace }}
+          🔧 Microservice: ${{ inputs.microservice }}
+          
+          Auto-generated by GitHub Actions"
+          
+          echo "✅ Cambios commiteados exitosamente"
+        fi
+    
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
+    
+    - name: Cleanup backup
+      run: |
+        rm -f "${{ steps.validate_cluster.outputs.cluster_file }}.backup"
+        echo "🧹 Backup eliminado"
+    
+    - name: Summary
+      run: |
+        echo "🎉 ¡Proceso completado exitosamente!"
+        echo ""
+        echo "📋 Resumen:"
+        echo "  • Cluster: ${{ inputs.cluster_name }}"
+        echo "  • Namespace: ${{ inputs.namespace }}"
+        echo "  • Microservicio: ${{ inputs.microservice }}"
+        echo "  • Archivo actualizado: ${{ steps.validate_cluster.outputs.cluster_file }}"
+        echo ""
+        echo "✅ El namespace y microservicio han sido agregados al cluster correctamente."
