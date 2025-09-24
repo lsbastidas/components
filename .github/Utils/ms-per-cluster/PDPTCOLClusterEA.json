@@ -1,0 +1,11 @@
+{
+  "siigo-configuration": "ms-springcloud, ms-springcloud-golang",
+  "siigo-mail": "api-gateway-mail, ms-mailactionssiigo, ms-mailprovidersiigo",
+  "siigo-metrics": "api-gateway-metrics",
+  "siigo-pt": "api-gateway-authentication, api-gateway-pt, ms-attachmentdocument, ms-esiigoauditlogging, ms-esiigocoidentityvalidation, ms-esiigocompany, ms-esiigoenotifications, ms-esiigofecodianresolutions, ms-esiigofecodocumentdiancontingency, ms-esiigofecodocumentemailmanagement, ms-esiigofecodocumentprevalidatordian, ms-esiigofecodocumentservice, ms-esiigofecoeventstacitaceptance, ms-esiigofecorevalidatedocuments, ms-esiigofilesmanagement, ms-esiigomailelectronicsender, ms-esiigoreportmanager, ms-esiigosupplypt, ms-esiigotestset, ms-esiigothirdpartydian, ms-esiigouyfeclosecompanydgi, ms-esiigouyfedgistate, ms-esiigouyfeprocessxmlbuy, ms-esiigouyfeprocessxmldocuments, ms-esiigouyfeprocessxmlreceived, ms-esiigovoucherbalance, ms-securityservice",
+  "siigo-pt-bill": "api-gateway-pt-bill, ms-esiigobillcodocumentdiansender, ms-esiigobillcodocumentgenerator, ms-esiigobillcodocumentmanagement, ms-esiigobillcodocumentmiddleware, ms-esiigobillcodocumentresponse, ms-esiigobillcodocumentvalidator",
+  "siigo-pt-ds": "api-gateway-pt-ds, ms-esiigofecodocumentdiansender, ms-esiigofecodocumentgenerator, ms-esiigofecodocumentmanagement, ms-esiigofecodocumentmiddleware, ms-esiigofecodocumentresponse, ms-esiigofecodocumentvalidator",
+  "siigo-pt-events": "api-gateway-pt-events, ms-esiigofecoeventsdiansender, ms-esiigofecoeventsgenerator, ms-esiigofecoeventsmanagement, ms-esiigofecoeventsvalidator",
+  "siigo-pt-ne": "api-gateway-pt-ne, ms-esiigonecodiansender, ms-esiigonecogenerator, ms-esiigonecomiddleware, ms-esiigonecoresponse, ms-esiigonecovalidator",
+  "siigo-pt-pos": "api-gateway-pt-pos, ms-esiigofeposdocumentdiansender, ms-esiigofeposdocumentgenerator, ms-esiigofeposdocumentmanagement, ms-esiigofeposdocumentmiddleware, ms-esiigofeposdocumentresponse, ms-esiigofeposdocumentvalidator"
+}

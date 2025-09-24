@@ -1,0 +1,20 @@
+{
+  "siigo-accountant-portal": "ms-accountant-multilogin-portal",
+  "siigo-accountant-process": "api-gateway-accountantprocess, ms-initialbalance-clientsupplier, ms-initialbalance-inventory, ms-logaccountantprocess, ms-magneticmedia, ms-treasurymovement",
+  "siigo-alliances": "api-gateway-alliances, ms-alliances, ms-paymentprovider, ms-siigoapi, ms-siigoapi-users, ms-siigoapiinvoice",
+  "siigo-catalog": "api-gateway-catalog, ms-bank, ms-browser, ms-companyqueries, ms-costcenters, ms-document-types, ms-filestorage, ms-import-products, ms-importadjustmentvoucher, ms-importphysicalcount, ms-mtgraphqldomain, ms-mtinventory, ms-parameters, ms-product, ms-salessettings, ms-session, ms-settings, ms-thirdparty, ms-thirdparty-interface, ms-traslate, ms-treasurysyncmt, ms-users, ms-warehouse",
+  "siigo-company": "api-gateway-company",
+  "siigo-configuration": "ms-springcloud, ms-springcloud-golang",
+  "siigo-cross": "api-gateway-cross, ms-addon, ms-currency, ms-globalstate, ms-mailprovidersiigo, ms-notification, ms-periodicalinvoiceprocessor, ms-periodicalinvoicerequestor, ms-scriptmanager, ms-scriptmanager-orchestrator, ms-search, ms-searchupdate",
+  "siigo-document": "api-gateway-document, fn-documenttransaction, ms-accountingreports, ms-documentview, ms-documentviewv2, ms-reportpdf",
+  "siigo-electronic": "api-gateway-electronic",
+  "siigo-metrics": "actionslog, api-gateway-metrics",
+  "siigo-mobile": "api-gateway-mobile, api-mobile-core, ms-app-users, ms-entrydocument, ms-invoice, ms-pos-accesscontrol, ms-pos-incomewithdrawal, ms-pos-preinvoices, ms-pos-products, ms-pos-shift, ms-pos-thirdparty, ms-posreport, ms-settings",
+  "siigo-payroll": "api-gateway-payroll, ms-payrollaccounting, ms-payrollaccountingdocument, ms-payrollaccountinglite, ms-payrollaccountingnovelties, ms-payrollaccountingorchestrator, ms-payrollaccountingvalidate, ms-payrollaccountingvoucher, ms-payrollbonus, ms-payrollbonusaccountingdocument, ms-payrollbonusaccountingnovelties, ms-payrollbonusaccountingorchestrator, ms-payrollbonusaccountingvalidate, ms-payrollbonusaccountingvoucher, ms-payrollbonusgeneratevoucher, ms-payrollconcept, ms-payrollconfig, ms-payrolldocument, ms-payrollemployee, ms-payrollfund, ms-payrollholiday, ms-payrollimports, ms-payrollincomeretention, ms-payrolljobcertificate, ms-payrolljobtitle, ms-payrollliquidator, ms-payrollloan, ms-payrollnovelty, ms-payrollnoveltyhistory, ms-payrollparameter, ms-payrollpayment, ms-payrollperiodsettlement, ms-payrollperiodview, ms-payrollpila, ms-payrollsendmail, ms-payrollsettlement, ms-payrollseverance, ms-payrollseveranceaccounting, ms-payrollvouchergenerate",
+  "siigo-portal-academico": "api-gateway-academico, ms-academico, ms-academico-provisioning",
+  "siigo-security": "api-gateway-authentication, ms-security, ms-securityservice",
+  "siigo-transactions": "api-gateway-transactions, ms-acbalance, ms-acdelete-reversed-transaction, ms-acdelete-reversed-transaction-invoice, ms-acentryqueries, ms-acorchestrator, ms-actransaction, ms-acvalidator",
+  "siigo-user-settings": "api-gateway-user-settings, ms-menuai, ms-menusettings",
+  "siigo-users-management": "api-gateway-usermanagement, ms-user-management, ms-usercatalog",
+  "siigo-vouchers": "ms-salessettings, ms-sendmailbridge"
+}
