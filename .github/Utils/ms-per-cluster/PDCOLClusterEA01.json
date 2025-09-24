@@ -1,6 +1,6 @@
 {
   "siigo-aad": "api-test",
-  "siigo-accountant-portal": "ms-abTest",
+  "siigo-accountant-portal": "api-gateway-accountantportal, ms-accountant-multilogin-portal",
   "siigo-accountant-process": "api-gateway-accountantprocess, ms-duestate-client, ms-duestatedate, ms-duestatedateprocess, ms-duestatedateprovisioning, ms-initialbalance-accounting, ms-initialbalance-clientsupplier, ms-initialbalance-inventory, ms-logaccountantprocess, ms-magneticmedia, ms-treasurymovement",
   "siigo-addons": "api-gateway-addons",
   "siigo-alliances": "api-gateway-alliances, ms-accountbalance, ms-alliances, ms-banner-notifications, ms-contracts, ms-documentstatehistory, ms-paymentcollector, ms-paymentcollector-processor, ms-paymentprovider, ms-paymentproviderconfiguration, ms-paymentproviderspreferences, ms-payments-background-processes, ms-paymentsqueueprocessor, ms-paymentsvouchercreator, ms-publicdocumentview, ms-siigoapi, ms-siigoapi-product, ms-siigoapi-users, ms-siigoapiinvoice, ms-siigoapiinvoicedatamanager, ms-siigoapimetrics, ms-siigoapiwebhook, ms-siigoapiwebhooks, ms-siigoapiwebhooksnotifier, ms-siigopay-configuration, ms-whatsappsender",
