@@ -52,11 +52,11 @@ jobs:
     - name: Validate cluster file exists
       id: validate_cluster
       run: |
-        CLUSTER_FILE="Utils/ms-per-cluster/${{ inputs.cluster_name }}.json"
+        CLUSTER_FILE=".github/Utils/ms-per-cluster/${{ inputs.cluster_name }}.json"
         if [ ! -f "$CLUSTER_FILE" ]; then
           echo "❌ Error: El archivo $CLUSTER_FILE no existe"
           echo "Clusters disponibles:"
-          ls -la Utils/ms-per-cluster/*.json | awk -F'/' '{print $NF}' | sed 's/.json$//' || echo "No se encontraron archivos JSON"
+          ls -la .github/Utils/ms-per-cluster/*.json | awk -F'/' '{print $NF}' | sed 's/.json$//' || echo "No se encontraron archivos JSON"
           exit 1
         fi
         echo "✅ Cluster file found: $CLUSTER_FILE"
