@@ -4,17 +4,35 @@ on:
   workflow_dispatch:
     inputs:
       cluster_name:
-        description: 'Nombre del cluster (ej: PDCOLClusterEA01)'
+        description: 'Selecciona el cluster'
         required: true
-        type: string
+        type: choice
+        options:
+          - PDCOLClusterEA01
+          - PDCOLClusterEA02
+          - PDCOLClusterPosWebEA
+          - PDMEXClusterEA
+          - PDPTCOLClusterEA
+          - QACOLClusterEA
+          - QACOLClusterEA02
+          - QACOLClusterPosWebEA
+          - QAMEXClusterEA
+          - QAPTCOLClusterEA
+          - STCOLClusterEA
+          - STMEXClusterEA
+          - STPTCOLClusterEA
+          - SiigoAcademico80sCluster
+        default: PDCOLClusterEA01
       namespace:
         description: 'Nombre del namespace (ej: siigo-addons)'
         required: true
         type: string
+        default: 'siigo-'
       microservice:
         description: 'Nombre del microservicio (ej: api-gateway-addons)'
         required: true
         type: string
+        default: 'api-gateway-'
 
 jobs:
   add-namespace-microservice:
@@ -26,10 +44,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Python
+      uses: actions/setup-python@v4
       with:
-        node-version: '18'
+        python-version: '3.11'
     
     - name: Validate cluster file exists
       id: validate_cluster
@@ -37,11 +55,12 @@ jobs:
         CLUSTER_FILE="Utils/ms-per-cluster/${{ inputs.cluster_name }}.json"
         if [ ! -f "$CLUSTER_FILE" ]; then
           echo "❌ Error: El archivo $CLUSTER_FILE no existe"
-          echo "Archivos disponibles:"
-          ls -la Utils/ms-per-cluster/*.json || echo "No se encontraron archivos JSON"
+          echo "Clusters disponibles:"
+          ls -la Utils/ms-per-cluster/*.json | awk -F'/' '{print $NF}' | sed 's/.json$//' || echo "No se encontraron archivos JSON"
           exit 1
         fi
         echo "✅ Cluster file found: $CLUSTER_FILE"
+        echo "📁 Procesando cluster: ${{ inputs.cluster_name }}"
         echo "cluster_file=$CLUSTER_FILE" >> $GITHUB_OUTPUT
     
     - name: Backup original file
@@ -55,49 +74,65 @@ jobs:
         NAMESPACE="${{ inputs.namespace }}"
         MICROSERVICE="${{ inputs.microservice }}"
         
-        # Crear script de Node.js para manipular el JSON
-        cat > update_json.js << 'EOF'
-        const fs = require('fs');
-        const path = require('path');
+        # Crear script de Python para manipular el JSON
+        cat > update_json.py << 'EOF'
+        import json
+        import sys
+        import os
         
-        const clusterFile = process.argv[2];
-        const namespace = process.argv[3];
-        const microservice = process.argv[4];
+        def main():
+            if len(sys.argv) != 4:
+                print("❌ Error: Se requieren 3 argumentos: cluster_file, namespace, microservice")
+                sys.exit(1)
+            
+            cluster_file = sys.argv[1]
+            namespace = sys.argv[2]
+            microservice = sys.argv[3]
+            
+            try:
+                # Leer el archivo JSON
+                with open(cluster_file, 'r', encoding='utf-8') as f:
+                    json_data = json.load(f)
+                
+                # Verificar si el namespace ya existe
+                if namespace in json_data:
+                    print(f"⚠️  Warning: El namespace '{namespace}' ya existe con el valor '{json_data[namespace]}'")
+                    print(f"Actualizando el microservicio de '{json_data[namespace]}' a '{microservice}'")
+                
+                # Agregar/actualizar el namespace y microservicio
+                json_data[namespace] = microservice
+                
+                # Escribir el archivo JSON actualizado (con formato bonito)
+                with open(cluster_file, 'w', encoding='utf-8') as f:
+                    json.dump(json_data, f, indent=2, ensure_ascii=False)
+                    f.write('\n')  # Agregar nueva línea al final
+                
+                print(f"✅ Namespace '{namespace}' agregado/actualizado con microservicio '{microservice}'")
+                print(f"📁 Archivo actualizado: {cluster_file}")
+                
+                # Mostrar el contenido actualizado
+                print('\n📋 Contenido actualizado:')
+                print(json.dumps(json_data, indent=2, ensure_ascii=False))
+                
+            except FileNotFoundError:
+                print(f"❌ Error: No se pudo encontrar el archivo {cluster_file}")
+                sys.exit(1)
+            except json.JSONDecodeError as e:
+                print(f"❌ Error: Archivo JSON inválido - {e}")
+                sys.exit(1)
+            except Exception as e:
+                print(f"❌ Error inesperado: {e}")
+                sys.exit(1)
         
-        try {
-          // Leer el archivo JSON
-          const jsonData = JSON.parse(fs.readFileSync(clusterFile, 'utf8'));
-          
-          // Verificar si el namespace ya existe
-          if (jsonData[namespace]) {
-            console.log(`⚠️  Warning: El namespace '${namespace}' ya existe con el valor '${jsonData[namespace]}'`);
-            console.log(`Actualizando el microservicio de '${jsonData[namespace]}' a '${microservice}'`);
-          }
-          
-          // Agregar/actualizar el namespace y microservicio
-          jsonData[namespace] = microservice;
-          
-          // Escribir el archivo JSON actualizado (con formato bonito)
-          fs.writeFileSync(clusterFile, JSON.stringify(jsonData, null, 2) + '\n');
-          
-          console.log(`✅ Namespace '${namespace}' agregado/actualizado con microservicio '${microservice}'`);
-          console.log(`📁 Archivo actualizado: ${clusterFile}`);
-          
-          // Mostrar el contenido actualizado
-          console.log('\n📋 Contenido actualizado:');
-          console.log(JSON.stringify(jsonData, null, 2));
-          
-        } catch (error) {
-          console.error('❌ Error al procesar el archivo JSON:', error.message);
-          process.exit(1);
-        }
+        if __name__ == "__main__":
+            main()
         EOF
         
-        # Ejecutar el script
-        node update_json.js "$CLUSTER_FILE" "$NAMESPACE" "$MICROSERVICE"
+        # Ejecutar el script de Python
+        python update_json.py "$CLUSTER_FILE" "$NAMESPACE" "$MICROSERVICE"
         
         # Limpiar archivo temporal
-        rm update_json.js
+        rm update_json.py
     
     - name: Validate JSON syntax
       run: |
