@@ -1,4 +1,5 @@
 {
+  "siigo-aad": "api-test",
   "siigo-accountant-portal": "api-gateway-accountantportal, ms-accountant-multilogin-portal",
   "siigo-accountant-process": "api-gateway-accountantprocess, ms-duestate-client, ms-duestatedate, ms-duestatedateprocess, ms-duestatedateprovisioning, ms-initialbalance-accounting, ms-initialbalance-clientsupplier, ms-initialbalance-inventory, ms-logaccountantprocess, ms-magneticmedia, ms-treasurymovement",
   "siigo-addons": "api-gateway-addons",
